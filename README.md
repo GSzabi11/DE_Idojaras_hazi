@@ -25,13 +25,14 @@ A pipeline egy modern, lokális, konténerizált adatplatformot valósít meg az
 ## 2. Adatmodell (Csillag séma)
 
 Az adattárház tervezése során a klasszikus Kimball-féle csillag sémát (Star Schema) alkalmaztuk az analitikai lekérdezések (OLAP) gyorsítása érdekében.
-![Airflow Sikeres Futás](Images/er_diagram.png)
+
+![Adatmodell ER diagram](Images/er_diagram.png)
 
 ---
 
 ## 3. Futtatás és Használat
 
-Futtatás előtt a .env.example fájl nevét írd át .env-re, vagy hozz létre egy sajátot a szükséges változókkal.
+Futtatás előtt a `.env.example` fájl nevét írd át `.env`-re, vagy hozz létre egy sajátot a szükséges változókkal.
 
 A projekt teljes infrastruktúrája konténerizálva van, így a futtatása mindössze pár lépésből áll:
 
@@ -43,7 +44,15 @@ A projekt teljes infrastruktúrája konténerizálva van, így a futtatása mind
 
 ![Airflow Sikeres Futás](Images/airflow.png)
 
-3. Az analitikai adatbázisra kötött **Metabase BI Dashboardot** a `http://localhost:3000` címen éred el. Az első indításkor egy admin fiók létrehozása szükséges az adatok vizualizációjához.
+3. Az analitikai adatbázisra kötött **Metabase BI Dashboardot** a `http://localhost:3000` címen éred el. 
+   Az első indításkor egy admin fiók létrehozása szükséges az adatok vizualizációjához. Ezt követően a Metabase kérni fogja az adatbázis-kapcsolat beállítását. Ehhez a következő adatokat kell megadni (a Docker hálózat és a `.env` fájl alapján):
+   * **Adatbázis típusa (Database type):** PostgreSQL
+   * **Név (Name):** weather_db (vagy tetszőleges név a Metabase felületén)
+   * **Host:** `postgres` *(Fontos: nem localhost, mert a konténerek a "postgres" néven látják egymást)*
+   * **Port:** 5432
+   * **Adatbázis neve (Database name):** `weather_db`
+   * **Felhasználónév (Username):** `airflow`
+   * **Jelszó (Password):** `airflow`
 
 ---
 
@@ -56,10 +65,8 @@ Megmutatja a legfrissebb letöltött időjárási adatokat városonként.
 ```sql
 SELECT 
     c.city_name AS "Város", 
-    c.country AS "Ország", 
     w.temperature AS "Hőmérséklet (°C)", 
-    w.wind_speed AS "Szélsebesség (km/h)",
-    d.full_datetime AS "Mérés ideje"
+    w.wind_speed AS "Szélsebesség (km/h)"
 FROM fact_weather w
 JOIN dim_cities c ON w.city_id = c.city_id
 JOIN dim_date d ON w.date_id = d.date_id
@@ -78,8 +85,20 @@ SELECT
 FROM dim_cities;
 ```
 
+### Városok páratartalma
+Megmutatja az egyes városokban a páratartalom százalékát a legutolsó mérés alapján.
+```sql
+SELECT 
+    c.city_name AS "Város", 
+    w.humidity AS "Páratartalom (%)"
+FROM fact_weather w
+JOIN dim_cities c ON w.city_id = c.city_id
+WHERE w.date_id = (SELECT MAX(date_id) FROM dim_date)
+ORDER BY w.humidity DESC;
+```
+
 ### Országok átlag hőmérséklete és szélsebessége
-A Metabase térképes (Pin map) vizualizációjához szükséges földrajzi koordináták lekérdezése.
+Megmutatja az egyes országok aggregált átlagos hőmérsékletét és szélsebességét a legutolsó mérések alapján, a dedikált aggregációs Data Mart táblából.
 ```sql
 SELECT 
     country AS "Ország", 
@@ -92,8 +111,36 @@ WHERE a.date_id = (SELECT MAX(date_id) FROM agg_country_weather)
 ORDER BY avg_temperature DESC;
 ```
 
+### Városok népessége
+Megmutatja az egyes városok népességét.
+```sql
+SELECT 
+    city_name AS "Város", 
+    country AS "Ország",
+    population AS "Népesség"
+FROM dim_cities
+ORDER BY population DESC;
+```
+
+### Városok hőmérsékletének átlaga az utolsó napon 
+Kiszámolja a legutolsó rögzített nap napi átlaghőmérsékletét, szélsebességét és páratartalmát városonként.
+```sql
+SELECT 
+    DATE(d.full_datetime) AS "Nap",
+    c.city_name AS "Város",
+    ROUND(AVG(w.temperature), 2) AS "Napi Átlaghőmérséklet (°C)",
+    ROUND(AVG(w.wind_speed), 2) AS "Napi Átlag Szélsebesség (km/h)",
+    ROUND(AVG(w.humidity), 0) AS "Napi Átlag Páratartalom (%)"
+FROM fact_weather w
+JOIN dim_cities c ON w.city_id = c.city_id
+JOIN dim_date d ON w.date_id = d.date_id
+WHERE DATE(d.full_datetime) = (SELECT MAX(DATE(full_datetime)) FROM dim_date)
+GROUP BY DATE(d.full_datetime), c.city_name
+ORDER BY "Napi Átlaghőmérséklet (°C)" DESC;
+```
+
 ### Metabase Dashboard
 A fenti lekérdezésekből összeállított végső, interaktív BI Dashboard:
 
-![Metabase Dashboard](Images/dashboard1.png)
-![Metabase Dashboard](Images/dashboard2.png)
+![Metabase Dashboard 1](Images/dashboard1.png)
+![Metabase Dashboard 2](Images/dashboard2.png)
