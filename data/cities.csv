@@ -1,0 +1,21 @@
+city_id,city_name,country,latitude,longitude,population
+1,Budapest,Hungary,47.4979,19.0402,1 685 000
+2,Debrecen,Hungary,47.5316,21.6273,200 000
+3,Bucharest,Romania,44.4268,26.1025,1 830 000
+4,Brasov,Romania,45.6427,25.5887,253 000
+5,Wien,Austria,48.2082,16.3738,1 982 000
+6,Salzburg,Austria,47.8095,13.0550,155 000
+7,Amsterdam,Netherlands,52.3676,4.9041,921 000
+8,Rotterdam,Netherlands,51.9225,4.4792,651 000
+9,Paris,France,48.8566,2.3522,2 102 000
+10,Lyon,France,45.7640,4.8357,513 000
+11,Madrid,Spain,40.4168,-3.7038,3 332 000
+12,Barcelona,Spain,41.3851,2.1734,1 620 000
+13,Valencia,Spain,39.4699,-0.3763,791 000
+14,New York,USA,40.7128,-74.0060,8 258 000
+15,Los Angeles,USA,34.0522,-118.2437,3 898 000
+16,Tokyo,Japan,35.6762,139.6503,14 094 000
+17,Osaka,Japan,34.6937,135.5023,2 691 000
+18,Sydney,Australia,-33.8688,151.2093,5 367 000
+19,Melbourne,Australia,-37.8136,144.9631,5 151 000
+20,Dubai,UAE,25.2048,55.2708,3 600 000
