@@ -2,3 +2,4 @@ __pycache__/
 .env
 */landing_zone/*
 !*/landing_zone/.gitkeep
+.vscode
