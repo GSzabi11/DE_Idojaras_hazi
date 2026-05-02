@@ -13,10 +13,10 @@ A pipeline egy modern, lokális, konténerizált adatplatformot valósít meg az
   * **REST API:** Open-Meteo API (szemistrukturált JSON adatok az aktuális időjárásról).
   * **Lokális fájl:** `cities.csv` (strukturált adatok a városokról: koordináták, népesség).
 * **Adattárolás (Storage):** 
-  * **Landing Zone:** Lokális fájlrendszer (`data/landing_zone`), ahová az API-ból kinyert nyers JSON fájlok érkeznek (reprodukálhatóság és debugolás céljából).
+  * **Landing Zone:** Lokális fájlrendszer (`data/landing_zone`), ahová az API-ból kinyert nyers JSON fájlok érkeznek.
   * **Data Warehouse:** PostgreSQL relációs adatbázis, amely egy optimalizált csillag sémát tárol.
 * **Transzformáció (Transform):** Python (Pandas) alapú feldolgozás. A szemistrukturált adatok lapítása (flattening), null-értékek kezelése, típuskonverziók és aggregációk elvégzése történik a betöltés előtt.
-* **Orkesztráció (Orchestration):** Apache Airflow. Kezeli a feladatok (taskok) függőségét, ütemezését (óránkénti futás) és biztosítja a folyamat **idempotenciáját** (újrafuttatás esetén nincs adatduplikáció).
+* **Orkesztráció (Orchestration):** Apache Airflow. Kezeli a feladatok (taskok) függőségét, ütemezését (fél óránkénti futás) és biztosítja a folyamat **idempotenciáját**.
 * **Vizualizáció (Serving):** Metabase, amellyel az adatbázisra csatlakozva interaktív dashboardok készíthetők.
 * **Infrastruktúra:** Docker Compose. Az egész rendszer (Postgres, Airflow, Metabase) egyetlen paranccsal, reprodukálhatóan elindítható.
 
@@ -32,7 +32,7 @@ Az adattárház tervezése során a klasszikus Kimball-féle csillag sémát (St
 
 ## 3. Futtatás és Használat
 
-Futtatás előtt a `.env.example` fájl nevét írd át `.env`-re, vagy hozz létre egy sajátot a szükséges változókkal.
+Futtatás előtt a `.env.example` fájl nevét át kell írni `.env`-re, vagy hozz létre egy sajátot a szükséges változókkal.
 
 A projekt teljes infrastruktúrája konténerizálva van, így a futtatása mindössze pár lépésből áll:
 
@@ -45,7 +45,7 @@ A projekt teljes infrastruktúrája konténerizálva van, így a futtatása mind
 ![Airflow Sikeres Futás](Images/airflow.png)
 
 3. Az analitikai adatbázisra kötött **Metabase BI Dashboardot** a `http://localhost:3000` címen éred el. 
-   Az első indításkor egy admin fiók létrehozása szükséges az adatok vizualizációjához. Ezt követően a Metabase kérni fogja az adatbázis-kapcsolat beállítását. Ehhez a következő adatokat kell megadni (a Docker hálózat és a `.env` fájl alapján):
+   Az első indításkor egy fiók létrehozása szükséges az adatok vizualizációjához. Ezt követően a Metabase kérni fogja az adatbázis-kapcsolat beállítását. Ehhez a következő adatokat kell megadni (a Docker hálózat és a `.env` fájl alapján):
    * **Adatbázis típusa (Database type):** PostgreSQL
    * **Név (Name):** weather_db (vagy tetszőleges név a Metabase felületén)
    * **Host:** `postgres` *(Fontos: nem localhost, mert a konténerek a "postgres" néven látják egymást)*
@@ -53,6 +53,14 @@ A projekt teljes infrastruktúrája konténerizálva van, így a futtatása mind
    * **Adatbázis neve (Database name):** `weather_db`
    * **Felhasználónév (Username):** `airflow`
    * **Jelszó (Password):** `airflow`
+
+4. A Metabase felületén a dashboard létrehozásának lépései:
+   1. Új kollecsion létrehozása a bal oldali menü sávban, ennek tetszőleges nevet adhatunk.
+   2. Ezt követően a jobb felső sarokban található new gombra kattintva válasszuk ki a Dashboard opciót. Ezzel létrehozva a Dashboard felületét.
+   3. Ehhez kell hozzáadni a new SQL query segítségével a lent található lekérdezéseket és a bal alsó sarokban található Visualization gombbal hozhatjuk létre a grafikonokat.
+   4. Ezt követően mentsük el a grafikont a Save gombbal és megjelenik a dashboardon.
+
+5. A konténereket a `docker-compose down` paranccsal tudjuk leállítani.
 
 ---
 

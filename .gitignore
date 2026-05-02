@@ -3,3 +3,4 @@ __pycache__/
 */landing_zone/*
 !*/landing_zone/.gitkeep
 .vscode
+metabase_data
