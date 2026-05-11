@@ -1,4 +1,4 @@
-# Globális Városok Élhetőségi Pipeline
+# Városok időjárás pipeline
 **Data Engineering Opcionális Házi Feladat**
 
 Ez a projekt egy teljes, end-to-end data engineering pipeline, amely kiválasztott világvárosok időjárási adatait és statikus metaadatait integrálja. A rendszer napi szinten gyűjt, tisztít és transzformál adatokat, hogy azokat egy adattárházban elemezhetővé és egy dashboardon vizualizálhatóvá tegye.
